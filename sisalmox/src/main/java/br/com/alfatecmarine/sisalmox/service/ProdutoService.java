@@ -92,4 +92,18 @@ public class ProdutoService {
             repository.deleteByNome(nome);
         }
     }
+
+    public Produto aumentaProduto(String nome, Produto qtdAumenta) {
+        
+        if (qtdAumenta == null || qtdAumenta.getQuantidade() < 0) {
+            throw new IllegalArgumentException("Erro na integridade de dados: A quantidade não pode ser nula ou negativa!");
+        }
+
+        Produto produtoExistente = repository.findByNomeIgnoreCase(nome)
+            .orElseThrow(() -> new ResourceNotFoundException("Erro na integridade de dados: O produto '" + nome + "' não foi encontrado!"));
+        
+        produtoExistente.setQuantidade(produtoExistente.getQuantidade() + qtdAumenta.getQuantidade());
+
+        return repository.save(produtoExistente);
+    }
 }
