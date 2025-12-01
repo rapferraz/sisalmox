@@ -47,9 +47,15 @@ public class ProdutoController {
         return service.alteraNomeProduto(nome.toLowerCase(), novosDados);
     }
 
+    @PutMapping("/aumentaqtd/{nome}")
+    public Produto aumentaProduto(@PathVariable String nome, @RequestBody Produto qtdAumenta) {
+        return service.aumentaProduto(nome, qtdAumenta);
+    }
+
     @DeleteMapping("/excluinome/{nome}")
     public ResponseEntity<String> excluirProduto(@PathVariable String nome) {
         service.excluirProduto(nome);
         return new ResponseEntity<>("Produto excluído com sucesso!", HttpStatus.OK);
     }
+
 }
