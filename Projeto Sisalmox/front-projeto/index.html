@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SisAlmox - Comando Imperial</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <video autoplay muted loop id="video-bg">
+        <source src="fundo.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <div id="toast-container"></div>
+
+    <main class="main-menu" id="telaMenu">
+        <header class="menu-header">
+            <div class="logo-animation">
+                <i class="fas fa-meteor logo-icon"></i>
+            </div>
+            <h1>Comando Estelar SisAlmox</h1>
+            <p>Painel de Controle Tático</p>
+        </header>
+
+        <div class="menu-grid">
+            <div class="menu-card" onclick="abrirModalEstoque()">
+                <div class="card-top">
+                    <div class="icon-box"><i class="fas fa-boxes"></i></div>
+                    <h3>Inventário</h3>
+                </div>
+                <div class="card-content">
+                    <p>Gerenciar frota e recursos.</p>
+                    <div class="stat-highlight">
+                        <span id="total-itens-display">0</span> Itens
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-card highlight" onclick="abrirModalCadastro()">
+                <div class="card-top">
+                    <div class="icon-box"><i class="fas fa-plus"></i></div>
+                    <h3>Nova Aquisição</h3>
+                </div>
+                <div class="card-content">
+                    <p>Registrar entrada de material.</p>
+                    <button class="btn-mini">Acessar</button>
+                </div>
+            </div>
+
+            <div class="menu-card chart-card" onclick="abrirModalRelatorios()">
+                <div class="card-top">
+                    <h3>Distribuição</h3>
+                </div>
+                <div class="chart-wrapper-fixed">
+                    <canvas id="estoqueChart"></canvas>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">
+                        <i class="fas fa-chart-bar"></i> Clique para Relatórios
+                    </span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalEstoque" class="modal-overlay">
+        <div class="modal-fullscreen">
+            <div class="modal-header">
+                <div class="header-title">
+                    <i class="fas fa-list-ul"></i>
+                    <h2>Inventário Geral</h2>
+                </div>
+
+                <div class="header-actions">
+                    <div class="filter-box-modal">
+                        <i class="fas fa-filter"></i>
+                        <select id="filterCategoria" onchange="buscarProduto()">
+                            <option value="">Todas as Categorias</option>
+                            <option value="Informatica">Informática</option>
+                            <option value="Limpeza">Limpeza</option>
+                            <option value="Escritorio">Escritório</option>
+                            <option value="Cafeteria">Cafeteria</option>
+                            <option value="Geral">Geral</option>
+                        </select>
+                    </div>
+
+                    <div class="search-box-modal">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por nome..." onkeyup="buscarProduto()">
+                    </div>
+
+                    <button class="close-btn" onclick="fecharModalEstoque()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-body-scroll">
+                <table class="clean-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">ID</th>
+                            <th>Produto</th>
+                            <th style="width: 150px;">Categoria</th>
+                            <th style="width: 120px;">Qtd.</th>
+                            <th class="col-actions">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-estoque"></tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-ghost" onclick="fecharModalEstoque()">Voltar ao Menu</button>
+                <button class="btn-glow" onclick="fecharModalEstoque(); abrirModalCadastro();">
+                    <i class="fas fa-plus"></i> Novo Item
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCadastro" class="modal-overlay">
+        <div class="modal-sophisticated">
+            <div class="modal-hero-header">
+                <div class="hero-icon"><i class="fas fa-cube"></i></div>
+                <div class="hero-text">
+                    <h2>Novo Ativo</h2>
+                    <p>Insira os dados no sistema</p>
+                </div>
+                <button class="close-btn-absolute" onclick="fecharModalCadastro()">&times;</button>
+            </div>
+
+            <form id="formProduto" onsubmit="salvarProduto(event)">
+                <div class="modal-body-padded">
+                    <div class="input-wrapper">
+                        <label>Material</label>
+                        <div class="input-modern">
+                            <i class="fas fa-signature"></i>
+                            <input type="text" id="nome" placeholder="Ex: Célula de Energia" required
+                                autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-wrapper">
+                            <label>Classificação</label>
+                            <div class="input-modern">
+                                <i class="fas fa-tag"></i>
+                                <select id="categoria">
+                                    <option value="Informatica">Informática</option>
+                                    <option value="Limpeza">Limpeza</option>
+                                    <option value="Escritorio">Escritório</option>
+                                    <option value="Cafeteria">Cafeteria</option>
+                                    <option value="Geral">Geral</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label>Quantidade</label>
+                            <div class="input-modern">
+                                <i class="fas fa-sort-numeric-up"></i>
+                                <input type="number" id="quantidade" min="1" value="1" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer-modern">
+                    <button type="button" class="btn-ghost" onclick="fecharModalCadastro()">Cancelar</button>
+                    <button type="submit" class="btn-glow">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalRelatorios" class="modal-overlay">
+        <div class="modal-large">
+            <div class="modal-header">
+                <div class="header-title">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>Inteligência Logística</h2>
+                </div>
+                <button class="close-btn" onclick="fecharModalRelatorios()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="mudarAba('volume')">Volume de Estoque</button>
+                <button class="tab-btn" onclick="mudarAba('fluxo')">Previsão de Movimento</button>
+            </div>
+
+            <div class="modal-body-scroll" style="padding: 20px;">
+                <div id="tab-volume" class="tab-content active">
+                    <div class="chart-wrapper-large">
+                        <canvas id="chartVolume"></canvas>
+                    </div>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <span>Total de Unidades Físicas</span>
+                            <h3 id="kpi-total-unidades">0 un.</h3>
+                        </div>
+                        <div class="kpi-card">
+                            <span>Categoria Dominante</span>
+                            <h3 id="kpi-cat-dominante">-</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-fluxo" class="tab-content">
+                    <div class="chart-wrapper-large">
+                        <canvas id="chartFluxo"></canvas>
+                    </div>
+                    <p style="text-align: center; color: var(--text-muted); margin-top: 10px;">
+                        <i class="fas fa-info-circle"></i> Análise de fluxo de volumes (últimos 6 meses).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
